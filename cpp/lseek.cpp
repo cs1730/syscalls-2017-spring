@@ -24,6 +24,10 @@ int main(const int argc, const char * argv []) {
   off_t len = lseek(fd, 0, SEEK_END);
   if (len == -1) perror("lseek");
 
+  // move offset back to beginning
+  // lseek(fd, -len, SEEK_CUR);
+  if(lseek(fd, 0, SEEK_SET) == -1) perror("lseek");
+
   // print file size
   cout << filename << " is "
        << len << " bytes in length."
