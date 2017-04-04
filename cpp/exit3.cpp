@@ -3,6 +3,6 @@
 #include <unistd.h>
 
 int main() {
-  _exit(42);
+  _exit(42); // verify with `$ echo $?`
 } // main
 
