@@ -1,4 +1,7 @@
 
+/** UNDER DEVELOPMENT! MAY NOT WORK! */
+/** See pipe3.cpp for a working example. */
+
 #include <array>
 #include <iostream>
 #include <string>
