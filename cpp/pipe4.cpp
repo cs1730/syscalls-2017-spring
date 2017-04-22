@@ -1,5 +1,5 @@
 
-/** UNDER DEVELOPMENT! MAY NOT WORK! */
+/** Now it works! -- Supa' Mike */
 /** See pipe3.cpp for a working example. */
 
 #include <array>
@@ -26,20 +26,22 @@ int main(const int argc, const char * argv []) {
   int pid;
 
   vector<vector<string>> commands {
-    { "cat", "pipe3.cpp" },
-    { "grep", "perror" },
+    { "cat", "pipe4.cpp" },
+    { "grep", "//" },
     { "less" }
   };
 
-  vector<array<int, 2>> pipes(commands.size() - 1);
+  vector<array<int, 2>> pipes;
 
   for (unsigned int i = 0; i < commands.size(); ++i) {
 
     if (i != commands.size() - 1) {
-      if (pipe(pipes.at(i).data()) == -1) {
+      int pipefd [2];
+      if (pipe(pipefd) == -1) {
 	perror("pipe");
 	exit(EXIT_FAILURE);
       } // if
+      pipes.push_back({pipefd[0], pipefd[1]});
     } // if
 
     if ((pid = fork()) == -1) {
@@ -48,30 +50,35 @@ int main(const int argc, const char * argv []) {
     } else if (pid == 0) {
 
       if (i != 0) {
-	if (dup2(pipes.at(i)[0], STDIN_FILENO) == -1) {
+	if (dup2(pipes.at(i-1)[0], STDIN_FILENO) == -1) {
 	  perror("dup2");
 	  exit(EXIT_FAILURE);
 	} // if
-	close_pipe(pipes.at(i).data());
       } // if
 
       if (i != commands.size() - 1) {
-	if (dup2(pipes.at(i-1)[1], STDOUT_FILENO) == -1) {
+	if (dup2(pipes.at(i)[1], STDOUT_FILENO) == -1) {
 	  perror("dup2");
 	  exit(EXIT_FAILURE);
 	} // if
-	close_pipe(pipes.at(i-1).data());
-      }
-
+      } // if
+      
+      // close all pipes created so far
+      for (unsigned int i = 0; i < pipes.size(); ++i) {
+	close_pipe(pipes.at(i).data());
+      } // for
+      
       nice_exec(commands.at(i));
 
     } // if
 
   } // for
 
+  // close all pipes
+  for (unsigned int i = 0; i < pipes.size(); ++i) {
+    close_pipe(pipes.at(i).data());
+  } // for
   
-  //  close_pipe(pipefd);
-
   waitpid(pid, nullptr, 0);
   return EXIT_SUCCESS;
 
